@@ -7,6 +7,8 @@ before_install:
   - cd boost_1_67_0
   - ./bootstrap.sh --prefix=/usr/local
   - sudo ./b2 install
+  - cd
+  - cd stellite
 
 # Enable C++ support
 language: cpp
