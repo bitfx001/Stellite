@@ -8,8 +8,9 @@ before_install:
   - ./bootstrap.sh --prefix=/usr/local
   - sudo ./b2 install
   - cd
+  - cd stellitecoin
   - cd stellite
-
+  
 # Enable C++ support
 language: cpp
 
