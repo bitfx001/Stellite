@@ -1,15 +1,12 @@
 sudo: required
 before_install:
-  - sudo apt install git-all build-essential cmake libboost-all-dev miniupnpc libpcsclite-dev libzmq3-dev libminiupnpc-dev libunbound-dev graphviz doxygen libunwind8-dev pkg-config libssl-dev
-  - sudo apt-get update && sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev libboost-all-dev
-  - wget https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.tar.gz
-  - tar -xf boost_1_67_0.tar.gz
-  - cd boost_1_67_0
+  - sudo apt-get update && sudo apt-get install g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev git-core build-essential cmake libpcsclite-dev libzmq3-dev miniupnpc libunbound-dev graphviz pkg-config libssl-dev
+  - wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0_rc2.tar.gz
+  - tar -xf boost_1_66_0_rc2.tar.gz
+  - cd boost_1_66_0
   - ./bootstrap.sh --prefix=/usr/local
   - sudo ./b2 install
-  - cd stellitecoin
-  - cd stellite
-  
+  - cd /home/travis/build/stellitequestion/Stellite/
 # Enable C++ support
 language: cpp
 
@@ -19,4 +16,4 @@ compiler:
 
 # Build steps
 script:
-  - make -j4
+  - make
