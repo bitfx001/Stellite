@@ -69,4 +69,4 @@ You can follow the build instructions in the [README](https://github.com/stellit
 
 ## Thanks for testing!
 
-Any problems or issues can be reported by opening a new [issue](https://github.com/stellitecoin/Stellite/issues/new). Please include your operating system version and complete explanation and output of the problem.
+Any problems or issues can be reported by opening a new [issue](https://github.com/stellitecoin/Stellite/issues/new?title=IPFS-Zeronet%20Testing&body=Please%20include%20your%20operating%20system%20version%20and%20complete%20explanation%20and%20output%20of%20the%20problem). Please include your operating system version and complete explanation and output of the problem.
