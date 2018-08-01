@@ -51,7 +51,17 @@ Try running the following IPFS command:
 
 This should print `Hi! This file was fetched from IPFS via the Stellite daemon!`
 
-## Third test, for the adventurous
+## Third test
+
+Add a file to IPFS and have someone else fetch it.
+
+Create a new text file and add any content to it. Then, using `ipfs add <filename>` add it to IPFS. You will receive a hash that looks something like `added QmegHcnrPgMwC7tBiMxChD54fgQMBUecNw9nE9UUU4x1bz newfile.txt`. Post this hash in our [Discord #alpha-testing channel](https://discord.gg/8PhF342) and someone else will attempt to fetch it over IPFS. You'll need to keep your daemon running until someone else fetches it.
+
+To fetch content added by someone else, simply use `ipfs get <hash>` to retrieve the file. Let the person who uploaded the file know what you received in the #alpha-testing channel.
+
+*Note: it doesn't have to be text, can pretty much be anything. Text is just simpler to verify*
+
+## Fourth test, for the adventurous
 
 If you are feeling up to it, you can build the following from source:
 
