@@ -47,7 +47,22 @@ The daemon uses it's own IPFS root path and needs to be set when you wish to int
 
 Try running the following IPFS command:
 
-`IPFS_PATH=~/.stellite/ipfs ipfs cat QmZ6Rdf5fiemr34Dn2mpo7ydAoBrSUPP37R36183EZn7HL`
+__Windows Command line__
+```
+set IPFS_PATH=c:\ProgramData\stellite\ipfs
+ipfs cat QmZ6Rdf5fiemr34Dn2mpo7ydAoBrSUPP37R36183EZn7HL
+```
+
+__Windows PowerShell__
+```
+$env:IPFS_PATH = 'c:\ProgramData\stellite\ipfs'
+ipfs cat QmZ6Rdf5fiemr34Dn2mpo7ydAoBrSUPP37R36183EZn7HL
+```
+
+__Linux and MacOS__ 
+```
+IPFS_PATH=~/.stellite/ipfs ipfs cat QmZ6Rdf5fiemr34Dn2mpo7ydAoBrSUPP37R36183EZn7HL
+```
 
 This should print `Hi! This file was fetched from IPFS via the Stellite daemon!`
 
