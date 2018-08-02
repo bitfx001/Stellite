@@ -19,7 +19,17 @@ The precompiled versions can be downloaded for each platform:
 2. [MacOS](https://www.stellite.live/downloads/stellite-zeronet-ipfs-mac.tar.gz)
 3. [Linux](https://www.stellite.live/downloads/stellite-zeronet-ipfs-linux.tar.gz)
 
-Once downloaded, extract to wherever you like and run `stellited --zeronet`(1). This will start the Stellite daemon with ZeroNet/IPFS enabled.
+Once downloaded, extract to wherever you like start the Stellite daemon with ZeroNet and IPFS enabled.
+
+__Windows__
+
+Run `stellited-zeronet.bat` by double-clicking
+
+__Linux and MacOS__
+
+`./stellited --zeronet`
+
+*You may also set other flags like `--data-dir` if you like*
 
 You should see output similar to, only 3 seeds should be loaded:
 
@@ -33,9 +43,6 @@ You should see output similar to, only 3 seeds should be loaded:
 
 If you see the following error
 `Unable to start IPFS node: IPFS API: manet.Listen(/ip4/127.0.0.1/tcp/5001) failed`. Please stop your own IPFS daemon first.
-
-(1) You may also set other flags like `--data-dir` if you like
-
 
 ## Second test
 
