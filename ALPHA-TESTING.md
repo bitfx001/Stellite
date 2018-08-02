@@ -59,6 +59,8 @@ Create a new text file and add any content to it. Then, using `ipfs add <filenam
 
 To fetch content added by someone else, simply use `ipfs get <hash>` to retrieve the file. Let the person who uploaded the file know what you received in the #alpha-ipfs-zeronet-wallet-integration channel.
 
+You can also use the public IPFS.io gateway to check the content you added by opening `https://ipfs.io/ipfs/<YOUR HASH>` in your browser. It might take some time to get the content on the first fetch.
+
 *Note: it doesn't have to be text, can pretty much be anything. Text is just simpler to verify*
 
 ## Fourth test, for the adventurous
