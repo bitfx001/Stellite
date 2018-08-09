@@ -123,7 +123,7 @@ VOLUME /root/.stellite
 # stellite-wallet-cli
 VOLUME /wallet
 
-EXPOSE 18080
-EXPOSE 18081
+EXPOSE 20188
+EXPOSE 20189
 
-ENTRYPOINT ["stellited", "--p2p-bind-ip=0.0.0.0", "--p2p-bind-port=18080", "--rpc-bind-ip=0.0.0.0", "--rpc-bind-port=18081", "--non-interactive", "--confirm-external-bind"]
+ENTRYPOINT ["stellited","--max-concurrency=1", "--p2p-bind-ip=0.0.0.0", "--p2p-bind-port=20188", "--rpc-bind-ip=0.0.0.0", "--rpc-bind-port=20189", "--non-interactive", "--confirm-external-bind"]
