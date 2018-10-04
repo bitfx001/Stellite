@@ -102,7 +102,7 @@ static const struct {
   { 4, 15, 0, 1522557836 },
 
   // Version 4 starts from block 194600, fork time decided about midday UTC on 2018-06-08
-  { 5, 20, 0, 1536135187 },
+  { 9, 20, 0, 1536135187 },
 };
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -2718,7 +2718,7 @@ bool Blockchain::check_tx_inputs(transaction& tx, tx_verification_context &tvc, 
 
   // from hard fork 2, we require mixin at least 2 unless one output cannot mix with 2 others
   // if one output cannot mix with 2 others, we accept at most 1 output that can mix
-  if (hf_version >= 6)
+  if (hf_version >= 5)
   {
     size_t n_unmixable = 0, n_mixable = 0;
     size_t mixin = std::numeric_limits<size_t>::max();

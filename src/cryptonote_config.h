@@ -62,6 +62,7 @@
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2    60000 //size of block (bytes) after which reward for block calculated using block size
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    20000 //size of block (bytes) after which reward for block calculated using block size - before first fork
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5    150000 //size of block (bytes) after which reward for block calculated using block size - second change, from v5
+#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V9    300000
 #define CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE          600
 #define CRYPTONOTE_DISPLAY_DECIMAL_POINT                2
 // COIN - number of smallest units in one coin
@@ -149,7 +150,7 @@
 
 #define THREAD_STACK_SIZE                       5 * 1024 * 1024
 
-#define HF_VERSION_DYNAMIC_FEE                  6
+#define HF_VERSION_DYNAMIC_FEE                  10
 #define HF_VERSION_MIN_MIXIN_4                  5
 
 // Modify this
