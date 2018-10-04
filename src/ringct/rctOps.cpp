@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Monero Research Labs
+// Copyright (c) 2016, Stellite Research Labs
 //
 // Author: Shen Noether <shen.noether@gmx.com>
 //
@@ -28,6 +28,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <boost/lexical_cast.hpp>
 #include "misc_log_ex.h"
 #include "rctOps.h"
 using namespace crypto;
@@ -61,25 +62,24 @@ namespace rct {
 
     //generates a random scalar which can be used as a secret key or mask
     void skGen(key &sk) {
-        sk = crypto::rand<key>();
-        sc_reduce32(sk.bytes);
+        random32_unbiased(sk.bytes);
     }
 
     //generates a random scalar which can be used as a secret key or mask
     key skGen() {
-        key sk = crypto::rand<key>();
-        sc_reduce32(sk.bytes);
+        key sk;
+        skGen(sk);
         return sk;
     }
 
     //Generates a vector of secret key
     //Mainly used in testing
     keyV skvGen(size_t rows ) {
+        CHECK_AND_ASSERT_THROW_MES(rows > 0, "0 keys requested");
         keyV rv(rows);
         size_t i = 0;
-        crypto::rand(rows * sizeof(key), (uint8_t*)&rv[0]);
         for (i = 0 ; i < rows ; i++) {
-            sc_reduce32(rv[i].bytes);
+            skGen(rv[i]);
         }
         return rv;
     }
@@ -132,12 +132,9 @@ namespace rct {
     }
     
     key zeroCommit(xmr_amount amount) {
-        key mask = identity();
-        mask = scalarmultBase(mask);
         key am = d2h(amount);
         key bH = scalarmultH(am);
-        addKeys(mask, mask, bH);
-        return mask;
+        return addKeys(G, bH);
     }
 
     key commit(xmr_amount amount, const key &mask) {
@@ -220,6 +217,11 @@ namespace rct {
         ge_p3_tobytes(AB.bytes, &A2);
     }
 
+    rct::key addKeys(const key &A, const key &B) {
+      key k;
+      addKeys(k, A, B);
+      return k;
+    }
 
     //addKeys1
     //aGB = aG + B where a is a scalar, G is the basepoint, and B is a point
@@ -254,6 +256,15 @@ namespace rct {
         ge_p3 A2;
         CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&A2, A.bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
         ge_double_scalarmult_precomp_vartime(&rv, a.bytes, &A2, b.bytes, B);
+        ge_tobytes(aAbB.bytes, &rv);
+    }
+
+    //addKeys3
+    //aAbB = a*A + b*B where a, b are scalars, A, B are curve points
+    //A and B must be input after applying "precomp"
+    void addKeys3(key &aAbB, const key &a, const ge_dsmp A, const key &b, const ge_dsmp B) {
+        ge_p2 rv;
+        ge_double_scalarmult_precomp_vartime2(&rv, a.bytes, A, b.bytes, B);
         ge_tobytes(aAbB.bytes, &rv);
     }
 
@@ -336,6 +347,7 @@ namespace rct {
     //This takes the outputs and commitments
     //and hashes them into a 32 byte sized key
     key cn_fast_hash(const ctkeyV &PC) {
+        if (PC.empty()) return rct::hash2rct(crypto::cn_fast_hash("", 0));
         key rv;
         cn_fast_hash(rv, &PC[0], 64*PC.size());
         return rv;
@@ -352,6 +364,7 @@ namespace rct {
    //put them in the key vector and it concatenates them
    //and then hashes them
    key cn_fast_hash(const keyV &keys) {
+       if (keys.empty()) return rct::hash2rct(crypto::cn_fast_hash("", 0));
        key rv;
        cn_fast_hash(rv, &keys[0], keys.size() * sizeof(keys[0]));
        //dp(rv);

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Monero Research Labs
+// Copyright (c) 2016, Stellite Research Labs
 //
 // Author: Shen Noether <shen.noether@gmx.com>
 // 
@@ -178,6 +178,7 @@ namespace rct {
             }
             while (i < 8 * (j + 1)) {
                 amountb2[i] = 0;
+                i++;
             }
         }
     }

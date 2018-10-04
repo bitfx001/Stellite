@@ -1,10 +1,10 @@
 FROM debian:jessie
 
-RUN apt-get update && apt-get install -y unzip automake build-essential curl file pkg-config git python
+RUN apt-get update && apt-get install -y unzip automake build-essential curl file pkg-config git python libtool
 
 WORKDIR /opt/android
 ## INSTALL ANDROID SDK
-RUN curl -s -O http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz \
+RUN curl -s -O https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz \
     && tar --no-same-owner -xzf android-sdk_r24.4.1-linux.tgz \
     && rm -f android-sdk_r24.4.1-linux.tgz
 
@@ -51,7 +51,7 @@ ENV PATH /usr/cmake-${CMAKE_VERSION}-Linux-x86_64/bin:$PATH
 
 # download, configure and make Zlib
 ENV ZLIB_VERSION 1.2.11
-RUN curl -s -O http://zlib.net/zlib-${ZLIB_VERSION}.tar.gz \
+RUN curl -s -O https://zlib.net/zlib-${ZLIB_VERSION}.tar.gz \
     && tar -xzf zlib-${ZLIB_VERSION}.tar.gz \
     && rm zlib-${ZLIB_VERSION}.tar.gz \
     && mv zlib-${ZLIB_VERSION} zlib \
@@ -72,12 +72,24 @@ RUN curl -s -O https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz 
     && make build_crypto build_ssl \
     && cd .. && mv openssl-${OPENSSL_VERSION}  openssl
 
-RUN git clone https://github.com/monero-project/monero.git \
-    && cd monero \
+RUN git clone https://github.com/zeromq/zeromq4-1.git \
+    && git clone https://github.com/zeromq/cppzmq.git \
+    && cd zeromq4-1 \
+    && ./autogen.sh \
+    && CC=clang CXX=clang++ ./configure --host=aarch64-linux-android \
+    && make
+
+RUN ln -s /opt/android/openssl/libcrypto.a /opt/android/openssl/libssl.a ${TOOLCHAIN_DIR}/aarch64-linux-android/lib
+
+RUN git clone https://github.com/stellite-project/stellite.git \
+    && cd stellite \
     && mkdir -p build/release \
     && cd build/release \
     && CC=clang CXX=clang++ \
          BOOST_ROOT=${WORKDIR}/boost_${BOOST_VERSION} BOOST_LIBRARYDIR=${WORKDIR}/boost_${BOOST_VERSION}/android64/lib/ \
          OPENSSL_ROOT_DIR=${WORKDIR}/openssl/ \
+         CMAKE_INCLUDE_PATH=${WORKDIR}/cppzmq/ \
+         CMAKE_LIBRARY_PATH=${WORKDIR}/zeromq4-1/.libs \
+         CXXFLAGS="-I ${WORKDIR}/zeromq4-1/include/" \
          cmake -D BUILD_TESTS=OFF -D ARCH="armv8-a" -D STATIC=ON -D BUILD_64=ON -D CMAKE_BUILD_TYPE=release -D ANDROID=true -D INSTALL_VENDORED_LIBUNBOUND=ON -D BUILD_TAG="android" ../.. \
     && make -j3

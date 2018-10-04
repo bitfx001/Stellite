@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017, The Monero Project
+// Copyright (c) 2014-2017, The Wasm Project
 // Copyright (c) 2017 The Masari Project(next_difficulty_v3)
 // All rights reserved.
 //
@@ -35,6 +35,7 @@
 #include "include_base_utils.h"
 #include <vector>
 #include <boost/math/special_functions/round.hpp>
+#include <boost/algorithm/clamp.hpp>
 
 #include "common/int-util.h"
 #include "crypto/hash.h"
@@ -318,10 +319,10 @@ difficulty_type next_difficulty_v3(std::vector<std::uint64_t> timestamps, std::v
     return low / weighted_timespans;
 }
 
-
-
-difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds) {
-
+difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds, bool isDebug) {
+    if(isDebug){
+         LOG_PRINT_L1("HELLO DOLLY back " << cumulative_difficulties.back() << ", front " << cumulative_difficulties.front());
+    }
     if (timestamps.size() > DIFFICULTY_BLOCKS_COUNT_V4)
     {
         timestamps.resize(DIFFICULTY_BLOCKS_COUNT_V4);
@@ -329,6 +330,9 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
     }
 
     size_t length_cumul_diff = cumulative_difficulties.size();
+    if(isDebug){
+        LOG_PRINT_L1("HELLO DOLLY length_cumul_diff " << length_cumul_diff);
+    }
     if(length_cumul_diff >= DIFFICULTY_BLOCKS_COUNT_V4 - 1) {
         std::vector<difficulty_type> first_diffs;
         std::vector<difficulty_type> mid_diffs;
@@ -351,10 +355,16 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
         {
             timestamps.resize(25);
             cumulative_difficulties.resize(25);
+                if(isDebug){
+                    LOG_PRINT_L1("HELLO DOLLY A1");
+                }
         }
         else if(median_mid > (median_first*6/5) && median_last > (median_mid*10/9)) {
             timestamps.resize(25);
             cumulative_difficulties.resize(25);
+                if(isDebug){
+                    LOG_PRINT_L1("HELLO DOLLY A2");
+                }
         }
 
     }
@@ -365,7 +375,9 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
         return 1;
     }
 
-
+    if(isDebug){
+        LOG_PRINT_L1("HELLO DOLLY length " << length);
+    }
     uint64_t weighted_timespans = 0;
     uint64_t target;
 
@@ -374,7 +386,7 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
     int lastShortTimeInARaw = 0;
 
     int nbLongTsLastNBlocks = 0;
-    bool lastTimeWasLong=false;
+
 
     if (true) {
         uint64_t previous_max = timestamps[0];
@@ -404,18 +416,17 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
                     lastTimeWasShort = false;
                     lastShortTimeInARaw=0;
                 }
-                if(timespan >100) {
-                    nbLongTsLastNBlocks ++;
-                    lastTimeWasLong = true;
-                } else {
-                    lastTimeWasLong = false;
-                }
+  
             }
 
             weighted_timespans += i * timespan;
             previous_max = max_timestamp;
         }
         // adjust faster if many blocks fount too fast
+        if(isDebug){
+            LOG_PRINT_L1("HELLO DOLLY previous_max " << previous_max);
+            LOG_PRINT_L1("HELLO DOLLY weighted_timespans " << weighted_timespans);
+        }
 
         if(lastTimeWasShort) {
             if(nbShortTsLastNBlocks >= 7) {
@@ -443,11 +454,93 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
             }
         }
 
+        if(isDebug){
+            LOG_PRINT_L1("HELLO DOLLY weighted_timespans2 " << weighted_timespans);
+        }
         // adjust = 0.99 for N=60, leaving the + 1 for now as it's not affecting N
         target = 99 * (((length + 1) / 2) * target_seconds) / 100;
     }
-
+        if(isDebug){
+            LOG_PRINT_L1("HELLO DOLLY target " << target);
+        }
     uint64_t minimum_timespan = target_seconds * length / 2;
+    if (weighted_timespans < minimum_timespan) {
+        weighted_timespans = minimum_timespan;
+    }
+        if(isDebug){
+            LOG_PRINT_L1("HELLO DOLLY weighted_timespans3 " << weighted_timespans);
+        }
+    difficulty_type total_work = cumulative_difficulties.back() - cumulative_difficulties.front();
+    assert(total_work > 0);
+        if(isDebug){
+            LOG_PRINT_L1("HELLO DOLLY total_work " << total_work);
+        }
+    uint64_t low, high;
+    mul(total_work, target, low, high);
+
+    if (high != 0) {
+
+        return 0;
+    }
+    if(isDebug){
+        LOG_PRINT_L1("HELLO DOLLY DIFF " << (low / weighted_timespans));
+    }
+    return (low / weighted_timespans);
+}
+
+difficulty_type next_difficulty_v4_cleaned(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds) {
+
+    if (timestamps.size() > DIFFICULTY_BLOCKS_COUNT_V4)
+    {
+        timestamps.resize(DIFFICULTY_BLOCKS_COUNT_V4);
+        cumulative_difficulties.resize(DIFFICULTY_BLOCKS_COUNT_V4);
+    }
+
+    size_t timestamp_count = timestamps.size();
+    assert(timestamp_count == cumulative_difficulties.size());
+    if (timestamp_count <= 1) {
+        return 1;
+    }
+
+    uint64_t prev_max_timestamp = timestamps[0];
+    uint64_t weighted_timespans = 0;
+    uint64_t target;
+    int short_time_count = 0;
+    int short_time_streak = 0;
+    bool last_was_short_time = false;
+    for (size_t i = 1; i < timestamp_count; ++i) {
+        uint64_t max_timestamp = std::max(prev_max_timestamp, timestamps[i]);
+        uint64_t timespan = boost::algorithm::clamp<uint64_t>(max_timestamp - prev_max_timestamp, 1, 11 * target_seconds);
+        last_was_short_time = false;
+        if (i >= (timestamp_count - 7))
+        {
+            if (timespan < 30) {
+                short_time_count++;
+                short_time_streak++;
+                last_was_short_time = true;
+            } else {
+                short_time_streak = 0;
+            }
+        }
+        weighted_timespans += i * timespan;
+        prev_max_timestamp = max_timestamp;
+    }
+    // adjust faster if many blocks found too fast
+
+    if (last_was_short_time) {
+        // From 3 blocks amound latest previous ones, add malus with increase of 10% per short block fount
+        if (short_time_count >= 3) {
+            weighted_timespans = weighted_timespans * (1 - ((short_time_count - 2) / 10));
+        }
+        // add second mallus 5% if short block are latest in a raw
+        if (short_time_streak == short_time_count && short_time_streak < 7) {
+            weighted_timespans = weighted_timespans * 95 / 100;
+        }
+    }
+    // adjust = 0.99 for N=60, leaving the + 1 for now as it's not affecting N
+    target = 99 * (((timestamp_count + 1) / 2) * target_seconds) / 100;
+
+    uint64_t minimum_timespan = target_seconds * timestamp_count / 2;
     if (weighted_timespans < minimum_timespan) {
         weighted_timespans = minimum_timespan;
     }
@@ -459,7 +552,6 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
     mul(total_work, target, low, high);
 
     if (high != 0) {
-
         return 0;
     }
     return (low / weighted_timespans);
@@ -470,7 +562,7 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
 // Copyright (c) 2017-2018 Zawy (pseudocode)
 // MIT license http://www.opensource.org/licenses/mit-license.php
 // Copyright (c) 2018 The Masari Project (10x for quicker recoveries, minimum to be symmetric with FTL)
-// Copyright (c) 2018 Wownero Inc., a Monero Enterprise Alliance partner company
+// Copyright (c) 2018 Wownero Inc., a Stellite Enterprise Alliance partner company
 // Copyright (c) 2018 The Karbowanec developers (initial code)
 // Copyright (c) 2018 Haven Protocol (refinements)
 // Degnr8, Karbowanec, Masari, Bitcoin Gold, Bitcoin Candy, and Haven have contributed.

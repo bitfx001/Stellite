@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017, The Monero Project
+// Copyright (c) 2014-2018, The Wasm Project
 // 
 // All rights reserved.
 // 
@@ -32,6 +32,7 @@
 
 #include "wallet/wallet2.h"
 #include "common/dns_utils.h"
+#include "simplewallet/simplewallet.h"
 #include <string>
 
 TEST(AddressFromTXT, Success)
@@ -57,7 +58,7 @@ TEST(AddressFromTXT, Success)
 
   EXPECT_STREQ(addr.c_str(), res.c_str());
 
-  std::string txtr3 = "foobar oa1:xmr tx_description=\"Donation for Monero Development Fund\"; ";
+  std::string txtr3 = "foobar oa1:xmr tx_description=\"Donation for Stellite Development Fund\"; ";
   txtr3 += "recipient_address=";
   txtr3 += addr;
   txtr3 += "; foobar";
@@ -83,11 +84,11 @@ TEST(AddressFromTXT, Failure)
 
 TEST(AddressFromURL, Success)
 {
-  const std::string addr = "44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A";
+  const std::string addr = MONERO_DONATION_ADDR;
   
   bool dnssec_result = false;
 
-  std::vector<std::string> addresses = tools::dns_utils::addresses_from_url("donate.getmonero.org", dnssec_result);
+  std::vector<std::string> addresses = tools::dns_utils::addresses_from_url("donate.getstellite.org", dnssec_result);
 
   EXPECT_EQ(1, addresses.size());
   if (addresses.size() == 1)
@@ -96,7 +97,7 @@ TEST(AddressFromURL, Success)
   }
 
   // OpenAlias address with an @ instead of first .
-  addresses = tools::dns_utils::addresses_from_url("donate@getmonero.org", dnssec_result);
+  addresses = tools::dns_utils::addresses_from_url("donate@getstellite.org", dnssec_result);
   EXPECT_EQ(1, addresses.size());
   if (addresses.size() == 1)
   {
