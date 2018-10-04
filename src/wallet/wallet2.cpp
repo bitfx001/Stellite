@@ -1603,12 +1603,15 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
   }
 
   // remove change sent to the spending subaddress account from the list of received funds
-  for (auto i = tx_money_got_in_outs.begin(); i != tx_money_got_in_outs.end();)
+ uint64_t sub_change = 0; 
+ for (auto i = tx_money_got_in_outs.begin(); i != tx_money_got_in_outs.end();)
   {
-    if (subaddr_account && i->first.major == *subaddr_account)
+    if (subaddr_account && i->first.major == *subaddr_account){
+      sub_change += i->second;
       i = tx_money_got_in_outs.erase(i);
-    else
-      ++i;
+      }
+    else{
+      ++i;}
   }
 
   // create payment_details for each incoming transfer to a subaddress index
