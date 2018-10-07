@@ -515,7 +515,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 
   if (num_valid_records < 2)
   {
-    LOG_PRINT_L0("WARNING: no two valid StellitePulse DNS checkpoint records were received");
+    LOG_PRINT_L1("WARNING: eckpoint records were receivedno two valid StellitePulse DNS checkpoint records were received");
     return false;
   }
 
