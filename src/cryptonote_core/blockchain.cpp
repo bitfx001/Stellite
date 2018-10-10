@@ -792,6 +792,13 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
   auto height = m_db->height();
   //size_t difficult_block_count = get_current_hard_fork_version() < 2 ? DIFFICULTY_BLOCKS_COUNT : DIFFICULTY_BLOCKS_COUNT_V3;
 
+//Diff reset to 4800 at fork height till window completes
+if ((uint64_t)height >= 367218 && (uint64_t)height <= 367218 + (uint64_t)DIFFICULTY_BLOCKS_COUNT_V4){
+    return (difficulty_type)4800;
+}
+
+
+
   size_t difficult_block_count;
 
   if(get_current_hard_fork_version() < 2){
