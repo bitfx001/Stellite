@@ -102,7 +102,7 @@ static const struct {
   { 4, 194600, 0, 1522557836 },
 
   // Version 9 starts from block 367218, fork time decided about midday UTC on 10-10-2018
-  { 9, 367218, 0, 1539176143 },
+  { 9, 367550, 0, 1539176143 },
 };
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
 
