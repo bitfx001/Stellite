@@ -101,7 +101,7 @@ static const struct {
   // Version 4 starts from block 194600, fork time decided about midday UTC on 2018-06-08
   { 4, 194600, 0, 1522557836 },
 
-  // Version 9 starts from block 367218, fork time decided about midday UTC on 10-10-2018
+  // Version 9 starts from block 367550, fork time decided about midday UTC on 10-10-2018
   { 9, 367550, 0, 1539176143 },
 };
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
@@ -793,7 +793,7 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
   //size_t difficult_block_count = get_current_hard_fork_version() < 2 ? DIFFICULTY_BLOCKS_COUNT : DIFFICULTY_BLOCKS_COUNT_V3;
 
 //Diff reset to 4800 at fork height till window completes
-if ((uint64_t)height >= 367218 && (uint64_t)height <= 367218 + (uint64_t)DIFFICULTY_BLOCKS_COUNT_V4){
+if ((uint64_t)height >= 367550 && (uint64_t)height <= 367550 + (uint64_t)DIFFICULTY_BLOCKS_COUNT_V4){
     return (difficulty_type)4800;
 }
 
