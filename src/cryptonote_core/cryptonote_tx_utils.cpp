@@ -125,8 +125,8 @@ namespace cryptonote
         //out_amounts[out_amounts.size() - 2] += out_amounts.back();
         //out_amounts.resize(out_amounts.size() - 1);
         out_amounts[1] += out_amounts[0];
-        for (size_t n = 1; n < out_amounts.size(); ++n)
-          out_amounts[n - 1] = out_amounts[n];
+        for (size_t n = 1; n < out_amounts.size(); ++n){
+          out_amounts[n - 1] = out_amounts[n];}
 	  out_amounts.pop_back();
       }
     }
