@@ -93,16 +93,16 @@ static const struct {
   { 1, 1, 0, 1341378000 },
  
   // Version 2 starts from block 67500, fork time decided on 2018-03-09
-  { 2, 5, 0, 1520584977 },
+  { 2, 67500, 0, 1520584977 },
 
   // Version 3 starts from block 100800, fork time decided on 2018-04-01 
-  { 3, 10, 0, 1522557835 },
+  { 3, 100800, 0, 1522557835 },
 
   // Version 4 starts from block 194600, fork time decided about midday UTC on 2018-06-08
-  { 4, 15, 0, 1522557836 },
+  { 4, 194600, 0, 1522557836 },
 
-  // Version 4 starts from block 194600, fork time decided about midday UTC on 2018-06-08
-  { 9, 20, 0, 1536135187 },
+  // Version 9 starts from block 367218, fork time decided about midday UTC on 10-10-2018
+  { 9, 367218, 0, 1539176143 },
 };
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
 
