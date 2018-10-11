@@ -71,11 +71,10 @@ namespace nodetool
 {
   namespace
   {
-    // TODO ZNIPFS: I define the zeronet addresses here. `const char *` would be a better option here but it seems like
+    // ZNIPFS: I define the zeronet addresses here. `const char *` would be a better option here but it seems like
     // you can't pass consts into Go
-    // TODO REQUIRE FEEDBACK
-    char* zeronet_address = (char*)"1FAiQ7MddvavaRF6b47fPEY4nSBVJUbCXf";
-    char* zeronet_testnet_address = (char*)"133gv4M9kx5oWP1yUkK9MRFSnEVQZAghmt";
+    char* zeronet_address = (char*)"1KvWEyqhyHsU9y6UT8xYCFDC8Y1vKaNueX";
+    char* zeronet_testnet_address = (char*)"1CH9ApTd83RM8ggz35pZApnKoZqDf7wXyh";
 
     const int64_t default_limit_up = 2048;
     const int64_t default_limit_down = 8192;
@@ -416,38 +415,76 @@ namespace nodetool
   std::set<std::string> node_server<t_payload_net_handler>::get_seed_nodes(bool testnet, bool zeronet) const
   {
     std::set<std::string> full_addrs;
-    if (testnet)
+
+    bool znipfs_seedlist_failed = false;
+    if (zeronet)
     {
-      // Add testnet nodes here, will update later PINKY PROMISE
-    }
-    else if (zeronet)
-    {
-      // TODO ZNIPFS: This is where the seedlist is downloaded from ZN/IPFS
+      // Get the seedlist from ZeroNet/IPFS
+      // The lib will return JSON will errors or the seedlist
       MGINFO("Fetching seed list from ZeroNet/IPFS...");
-      char *seedlist = ZNIPFSGetSeedList(zeronet_address);
-      MGINFO("Fetched the seed list from ZeroNet/IPFS");
-      
-      // TODO REQUIRE FEEDBACK
-      // I have no idea if this is the correct way of doing this
-      // I can alternatively return JSON to be parsed here
-      // Any feedback on this would be very helpful
-      char* address = strtok(seedlist, "\n");
-      while(address)
+      char *result_json;
+      // We have a different ZeroNet address for the testnet, make the
+      // distinction here
+      if (testnet)
       {
-        full_addrs.insert(address);
-        MGINFO("Added seed from ZeroNet/IPFS: " << address);
-        address = strtok(NULL, "\n");
+        result_json = ZNIPFSGetSeedList(zeronet_testnet_address);
+      }
+      else
+      {
+        result_json = ZNIPFSGetSeedList(zeronet_address);
+      }
+
+      rapidjson::Document json;
+      if (json.Parse(result_json).HasParseError())
+      {
+        znipfs_seedlist_failed = true;
+        MWARNING("Unable to parse ZeroNet/IPFS result, falling back to hardcoded node list");
+      }
+
+      // Continue if parsing did not fail
+      if (!znipfs_seedlist_failed)
+      {
+        const char *znipfs_status = json["Status"].GetString();
+        if (strcmp(znipfs_status, "ok") == 0)
+        {
+          // All OK, insert into the seedlist
+          const rapidjson::Value& seedlist = json["Seedlist"];
+          assert(seedlist.IsArray());
+          for (rapidjson::SizeType i = 0; i < seedlist.Size(); i++)
+          {
+            MGINFO("Added seed from ZeroNet/IPFS: " << seedlist[i].GetString());
+            full_addrs.insert(seedlist[i].GetString());
+          }
+          MGINFO("Fetched the seedlist from ZeroNet/IPFS");
+        }
+        else
+        {
+          // If failed, it will print the reason and fall back to hardcoded nodes
+          znipfs_seedlist_failed = true;
+          MWARNING("Unable to get seedlist from ZeroNet/IPFS, " << json["Message"].GetString() << ". Falling back to hardcoded node list");
+        }
       }
     }
-    else
+
+    // If we failed to retrieve the seedlist from ZeroNet/IPFS or it
+    // was not enabled
+    if (!zeronet || znipfs_seedlist_failed)
     {
-      full_addrs.insert("185.91.116.196:20188");
-      full_addrs.insert("185.91.116.136:20188");
-      full_addrs.insert("185.91.116.164:20188");
-      full_addrs.insert("62.75.160.163:20188");
-      full_addrs.insert("107.191.63.92:20188");
-      full_addrs.insert("51.38.235.241:20188");
+      if (testnet)
+      {
+        // Add testnet nodes here, will update later PINKY PROMISE
+      }
+      else
+      {
+        full_addrs.insert("185.91.116.196:20188");
+        full_addrs.insert("185.91.116.136:20188");
+        full_addrs.insert("185.91.116.164:20188");
+        full_addrs.insert("62.75.160.163:20188");
+        full_addrs.insert("107.191.63.92:20188");
+        full_addrs.insert("51.38.235.241:20188");
+      }
     }
+
     return full_addrs;
   }
 
@@ -459,18 +496,38 @@ namespace nodetool
     m_testnet = command_line::get_arg(vm, command_line::arg_testnet_on);
     m_znipfs = command_line::get_arg(vm, arg_znipfs);
 
-    // TODO ZNIPFS: This is where libznipfs is set up with the current data dir
+    // ZNIPFS: Set up the IPFS node if it has been enabled
     if (m_znipfs) {
-      // I've prefixed all the calls with ZNIPFS, this is just to identify them
-      // easily. If I can set a namespace for the lib from Go it would be cleaner
-
       // We use the provided --data-dir as the base path for IPFS and
       // ZeroNet storage as well
       //
-      // TODO REQUIRE FEEDBACK - Do tell me if c_str()+const_cast is Ok or not?
       std::string data_dir = command_line::get_arg(vm, command_line::arg_data_dir);
-      ZNIPFSStartNode(const_cast<char*>(data_dir.c_str()));
-      //ZNIPFSStartNode("/tmp/GET_DATA_DIR");
+      // ZNIPFSStartNode returns a JSON string as result
+      // TODO REQUIRE FEEDBACK - Do tell me if c_str()+const_cast is Ok or not?
+      char* result_json = ZNIPFSStartNode(const_cast<char*>(data_dir.c_str()));
+      rapidjson::Document json;
+      if (json.Parse(result_json).HasParseError())
+      {
+        m_znipfs = false;
+        MWARNING("Unable to parse ZeroNet/IPFS result, ZeroNet/IPFS disabled");
+      }
+      else
+      {
+        // Check the status of the ZeroNet/IPFS node after starting and display
+        // the message from the lib
+        const char *znipfs_status = json["Status"].GetString();
+        if (strcmp(znipfs_status, "ok") == 0)
+        {
+          // If all is ok, the message will contain the IPFS API port
+          MGINFO(json["Message"].GetString());
+        }
+        else
+        {
+          // If failed, it will print the reason and disable the lib
+          m_znipfs = false;
+          MWARNING("Unable to initialize ZeroNet and IFPS, " << json["Message"].GetString() << ". ZeroNet/IPFS disabled");
+        }
+      }
     }
 
     if (m_testnet)
@@ -727,8 +784,10 @@ namespace nodetool
     m_peerlist.deinit();
     m_net_server.deinit_server();
 
-    // TODO ZNIPFS: This is where libznipfs is shut down
-    ZNIPFSStopNode();
+    // ZNIPFS: Shut down the IPFS node, if enabled
+    if (m_znipfs) {
+      ZNIPFSStopNode();
+    }
 
     return store_config();
   }

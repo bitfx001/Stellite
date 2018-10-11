@@ -52,6 +52,7 @@
 #include "math_helper.h"
 #include "net_node_common.h"
 #include "common/command_line.h"
+#include "rapidjson/document.h"
 #include "libznipfs/libznipfs.h"
 
 PUSH_WARNINGS
