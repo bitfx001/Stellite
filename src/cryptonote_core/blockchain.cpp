@@ -1201,7 +1201,7 @@ bool Blockchain::create_block_template(block& b, const account_public_address& m
   if (m_btc_valid) {
      MDEBUG("Not using cached template: address " << (!memcmp(&miner_address, &m_btc_address, sizeof(cryptonote::account_public_address))) << ", nonce " << (m_btc_nonce == ex_nonce) << ", cookie " << (m_btc_pool_cookie == m_tx_pool.cookie()));
      invalidate_block_template_cache();
-     LOG_PRINT_L0("Have invalidated the cache stored <3");
+     LOG_PRINT_L4("Have invalidated the cache stored <3");
   }
 
   b.major_version = m_hardfork->get_current_version();
