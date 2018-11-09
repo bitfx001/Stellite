@@ -329,6 +329,7 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
     }
 
     size_t length_cumul_diff = cumulative_difficulties.size();
+    /*
     if(length_cumul_diff >= DIFFICULTY_BLOCKS_COUNT_V4 - 1) {
         std::vector<difficulty_type> first_diffs;
         std::vector<difficulty_type> mid_diffs;
@@ -357,7 +358,7 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
             cumulative_difficulties.resize(25);
         }
 
-    }
+    }*/
 
     size_t length = timestamps.size();
     assert(length == cumulative_difficulties.size());
@@ -373,8 +374,6 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
     bool lastTimeWasShort=false;
     int lastShortTimeInARaw = 0;
 
-    int nbLongTsLastNBlocks = 0;
-    //bool lastTimeWasLong=false;
 
     if (true) {
         uint64_t previous_max = timestamps[0];
@@ -396,19 +395,13 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
                 timespan = 11 * target_seconds;
             }
             if(i>=(length-7)) {
-                if(timespan < 30) {
+                if(timespan < 90) {
                     nbShortTsLastNBlocks ++;
                     lastTimeWasShort = true;
                     lastShortTimeInARaw ++;
                 } else {
                     lastTimeWasShort = false;
                     lastShortTimeInARaw=0;
-                }
-                if(timespan >100) {
-                    nbLongTsLastNBlocks ++;
-                    //lastTimeWasLong = true;
-                } else {
-                    //lastTimeWasLong = false;
                 }
             }
 
@@ -419,27 +412,15 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
 
         if(lastTimeWasShort) {
             if(nbShortTsLastNBlocks >= 7) {
-                weighted_timespans = weighted_timespans *1/2;
-            } else if(nbShortTsLastNBlocks == 6) {
                 weighted_timespans = weighted_timespans *3/5;
-                if(lastShortTimeInARaw ==6) {
-                    weighted_timespans = weighted_timespans *7/8;
-                }
+            } else if(nbShortTsLastNBlocks == 6) {
+                weighted_timespans = weighted_timespans *5/7;
             } else if(nbShortTsLastNBlocks == 5) {
                 weighted_timespans = weighted_timespans *4/5;
-                if(lastShortTimeInARaw ==5) {
-                    weighted_timespans = weighted_timespans *7/8;
-                }
             } else if(nbShortTsLastNBlocks == 4) {
                 weighted_timespans = weighted_timespans *9/10;
-                if(lastShortTimeInARaw ==4) {
-                    weighted_timespans = weighted_timespans *7/8;
-                }
             } else if(nbShortTsLastNBlocks == 3  ) {
                 weighted_timespans = weighted_timespans *11/12;
-                if(lastShortTimeInARaw ==3) {
-                    weighted_timespans = weighted_timespans *7/8;
-                }
             }
         }
 
