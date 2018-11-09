@@ -952,8 +952,6 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
     {
       block_verification_context bvc = boost::value_initialized<block_verification_context>();
       LOG_PRINT_L0("disconnected, c est la vie");
-      MGINFO_BLUE("disconnected, c est la vie");
-      printf("disconnected c est la vie \n" );
       bool r = handle_alternative_block(old_ch_ent, get_block_hash(old_ch_ent), bvc);
       if(!r)
       {
@@ -1395,7 +1393,6 @@ bool Blockchain::complete_timestamps_vector(uint64_t start_top_height, std::vect
 bool Blockchain::handle_alternative_block(const block& b, const crypto::hash& id, block_verification_context& bvc)
 {
   LOG_PRINT_L3("Blockchain::" << __func__);
-  printf("HANDLE ALTERNATIVE \n" );
   CRITICAL_REGION_LOCAL(m_blockchain_lock);
   m_timestamps_and_difficulties_height = 0;
   uint64_t block_height = get_block_height(b);
@@ -3624,9 +3621,7 @@ bool Blockchain::add_new_block(const block& bl_, block_verification_context& bvc
   if(!(bl.prev_id == get_tail_id()))
   {
     //chain switching or wrong block
-    LOG_PRINT_L0("block previous id  = " << bl.prev_id << " is not ok with db previous id  "<<get_tail_id());
-    MGINFO_BLUE("block previous id ");
-    printf("block previous id pb \n" );
+    LOG_PRINT_L0("block previous id  = " << bl.prev_id << " is not ok with db previous id  ");
     bvc.m_added_to_main_chain = false;
     m_db->block_txn_stop();
     bool r = handle_alternative_block(bl, id, bvc);
