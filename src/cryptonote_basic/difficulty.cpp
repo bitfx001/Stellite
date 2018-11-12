@@ -465,6 +465,101 @@ difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::v
     return (low / weighted_timespans);
 }
 
+difficulty_type next_difficulty_v5(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds) {
+
+    if (timestamps.size() > DIFFICULTY_BLOCKS_COUNT_V4)
+    {
+        timestamps.resize(DIFFICULTY_BLOCKS_COUNT_V4);
+        cumulative_difficulties.resize(DIFFICULTY_BLOCKS_COUNT_V4);
+    }
+
+    size_t length_cumul_diff = cumulative_difficulties.size();
+    size_t length = timestamps.size();
+    assert(length == cumulative_difficulties.size());
+    if (length <= 1) {
+        return 1;
+    }
+
+
+    uint64_t weighted_timespans = 0;
+    uint64_t target;
+
+    int nbShortTsLastNBlocks = 0;
+    bool lastTimeWasShort=false;
+    int lastShortTimeInARaw = 0;
+
+
+    if (true) {
+        uint64_t previous_max = timestamps[0];
+
+        for (size_t i = 1; i < length; i++) {
+            uint64_t timespan;
+            uint64_t max_timestamp;
+
+            if (timestamps[i] > previous_max) {
+                max_timestamp = timestamps[i];
+            } else {
+                max_timestamp = previous_max;
+            }
+
+            timespan = max_timestamp - previous_max;
+            if (timespan == 0) {
+                timespan = 1;
+            } else if (timespan > 11 * target_seconds) {
+                timespan = 11 * target_seconds;
+            }
+            if(i>=(length-7)) {
+                if(timespan < 90) {
+                    nbShortTsLastNBlocks ++;
+                    lastTimeWasShort = true;
+                    lastShortTimeInARaw ++;
+                } else {
+                    lastTimeWasShort = false;
+                    lastShortTimeInARaw=0;
+                }
+            }
+
+            weighted_timespans += i * timespan;
+            previous_max = max_timestamp;
+        }
+        // Adjust faster if many blocks found too fast
+
+        if(lastTimeWasShort) {
+            if(nbShortTsLastNBlocks >= 7) {
+                weighted_timespans = weighted_timespans *3/5;
+            } else if(nbShortTsLastNBlocks == 6) {
+                weighted_timespans = weighted_timespans *5/7;
+            } else if(nbShortTsLastNBlocks == 5) {
+                weighted_timespans = weighted_timespans *4/5;
+            } else if(nbShortTsLastNBlocks == 4) {
+                weighted_timespans = weighted_timespans *9/10;
+            } else if(nbShortTsLastNBlocks == 3  ) {
+                weighted_timespans = weighted_timespans *11/12;
+            }
+        }
+
+        // adjust = 0.99 for N=60, leaving the + 1 for now as it's not affecting N
+        target = 99 * (((length + 1) / 2) * target_seconds) / 100;
+    }
+
+    uint64_t minimum_timespan = target_seconds * length / 2;
+    if (weighted_timespans < minimum_timespan) {
+        weighted_timespans = minimum_timespan;
+    }
+
+    difficulty_type total_work = cumulative_difficulties.back() - cumulative_difficulties.front();
+    assert(total_work > 0);
+
+    uint64_t low, high;
+    mul(total_work, target, low, high);
+
+    if (high != 0) {
+
+        return 0;
+    }
+    return (low / weighted_timespans);
+}
+
 // LWMA difficulty algorithm
 // Background:  https://github.com/zawy12/difficulty-algorithms/issues/3
 // Copyright (c) 2017-2018 Zawy (pseudocode)
