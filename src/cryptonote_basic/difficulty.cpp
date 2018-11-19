@@ -586,7 +586,7 @@ difficulty_type next_difficulty_v5(std::vector<std::uint64_t> timestamps, std::v
 
 // Cryptonote clones:  #define DIFFICULTY_BLOCKS_COUNT_V2 DIFFICULTY_WINDOW_V2 + 1
 
-difficulty_type next_difficulty_v5(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds) {
+difficulty_type next_difficulty_v6(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds) {
 
     const int64_t T = static_cast<int64_t>(target_seconds);
     size_t N = DIFFICULTY_WINDOW_V4;
