@@ -771,7 +771,7 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
   std::vector<uint64_t> timestamps;
   std::vector<difficulty_type> difficulties;
   auto height = m_db->height();
-
+  top_hash = get_tail_id();
   size_t difficult_block_count;
 
   if(get_current_hard_fork_version() < 2){
@@ -806,7 +806,7 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
   }
   else
   {
-    size_t offset = height - std::min < size_t > (height, static_cast<size_t>(difficult_block_count));
+    uint64_t offset = height - std::min < uint64_t > (height, static_cast<uint64_t>(difficult_block_count));
     if (offset == 0)
       ++offset;
 
